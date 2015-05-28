@@ -1,3 +1,9 @@
+calibre is a fantastic open source e-book manager. litebrary is a fork of calibre that will reduce the build to its core functions of being an e-book cataloger and reader. Support for obscure formats will be eliminated, as will fetching news from the Internet, buying books, or sharing. E-reader connectivity will be eliminated, as will the webserver. Support for plugins will be greatly reduced.
+
+Instead of managing all of that, litebrary will focus on design and performance issues related to the core functions. 
+
+At this point, litebrary is just vaporware. There's a lot to cut out.
+
 calibre
 =========
 
