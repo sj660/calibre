@@ -480,7 +480,7 @@ programs block calibre from opening a connection to send email. Try adding an ex
 antivirus program.
 
 .. note:: 
-    Microsoft/Google can disable your account if you use it to send large
+    Microsoft/Google/Gmx can disable your account if you use it to send large
     amounts of email. So, when using Hotmail/Gmail to send mail calibre automatically
     restricts itself to sending one book every five minutes. If you don't mind
     risking your account being blocked you can reduce this wait interval by going
@@ -564,6 +564,22 @@ problem for *some* calibre users.
   * Try upgrading the firmware on your Kobo Touch to the latest
   * Try resetting the Kobo (sometimes this cures the problem for a little while, but then it re-appears, in which case you have to reset again and again)
   * Try only putting one or two books onto the Kobo at a time and do not keep large collections on the Kobo
+
+
+I transferred some books to my Kindle using calibre and they did not show up?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Books sent to the Kindle only show up on the Kindle after they have been
+*indexed* by the Kindle. This can take some time. If the book still does not
+show up after some time, then it is likely that the Kindle indexer crashed.
+Sometimes a particular book can cause the indexer to crash. Unfortunately, Amazon has
+not provided any way to deduce which book is causing a crash on the Kindle.
+Your only recourse is to either reset the Kindle, or delete all files from its
+memory using Windows Explorer (or whatever file manager you use) and then send
+the books to it again, one by one, until you discover the problem book. Once
+you have found the problem book, delete it off the Kindle and do a MOBI to MOBI
+or MOBI to AZW3 conversion in calibre and then send it back. This will most
+likely take care of the problem.
 
 Library Management
 ------------------
@@ -890,12 +906,15 @@ some functionality, such as drag and drop to not work.
 Finally, some users have reported that disabling UAC fixes the problem.
 
 
-calibre is not starting on OS X?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+calibre is not starting/crashing on OS X?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One common cause of failures on OS X is the use of accessibility technologies that are incompatible with the graphics toolkit calibre uses.
-Try turning off VoiceOver if you have it on. Also go to System Preferences->System->Universal Access and turn off the setting for enabling
-access for assistive devices in all the tabs.
+One common cause of failures on OS X is the use of accessibility technologies
+that are incompatible with the graphics toolkit calibre uses.  Try turning off
+VoiceOver if you have it on. Also go to System Preferences->System->Universal
+Access and turn off the setting for enabling access for assistive devices in
+all the tabs. Another cause can be some third party apps that modify system
+behavior, such as Smart Scroll.
 
 You can obtain debug output about why calibre is not starting by running `Console.app`. Debug output will
 be printed to it. If the debug output contains a line that looks like::

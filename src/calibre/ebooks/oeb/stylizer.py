@@ -513,7 +513,7 @@ class Style(object):
         x = self._style.get(attr)
         if x is not None:
             if x == 'auto':
-                ans = base
+                ans = self._unit_convert(str(img_size) + 'px', base=base)
             else:
                 x = self._unit_convert(x, base=base)
                 if isinstance(x, (float, int, long)):
@@ -534,7 +534,7 @@ class Style(object):
         return ans
 
     def img_size(self, width, height):
-        ' Return the final size of an <img> given that it points to an imafe of size widthxheight '
+        ' Return the final size of an <img> given that it points to an image of size widthxheight '
         return self.img_dimension('width', width), self.img_dimension('height', height)
 
     @property

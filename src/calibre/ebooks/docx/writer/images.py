@@ -44,11 +44,7 @@ class ImagesManager(object):
         self.document_relationships = document_relationships
         self.count = 0
 
-    def add_image(self, img, block, stylizer, bookmark=None, as_block=False):
-        src = img.get('src')
-        if not src:
-            return
-        href = self.abshref(src)
+    def read_image(self, href):
         if href not in self.images:
             item = self.oeb.manifest.hrefs.get(href)
             if item is None or not isinstance(item.data, bytes):
@@ -58,9 +54,20 @@ class ImagesManager(object):
             image_rid = self.document_relationships.add_image(image_fname)
             self.images[href] = Image(image_rid, image_fname, width, height, fmt, item)
             item.unload_data_from_memory()
+        return self.images[href]
+
+    def add_image(self, img, block, stylizer, bookmark=None, as_block=False):
+        src = img.get('src')
+        if not src:
+            return
+        href = self.abshref(src)
+        try:
+            rid = self.read_image(href).rid
+        except AttributeError:
+            return
         drawing = self.create_image_markup(img, stylizer, href, as_block=as_block)
         block.add_image(drawing, bookmark=bookmark)
-        return self.images[href].rid
+        return rid
 
     def create_image_markup(self, html_img, stylizer, href, as_block=False):
         # TODO: img inside a link (clickable image)
@@ -74,6 +81,13 @@ class ImagesManager(object):
                 floating = 'center' if mr == 'auto' else 'right'
             if mr == 'auto':
                 floating = 'center' if ml == 'auto' else 'right'
+        else:
+            parent = html_img.getparent()
+            if len(parent) == 1 and not (parent.text or '').strip() and not (html_img.tail or '').strip():
+                # We have an inline image alone inside a block
+                pstyle = stylizer.style(parent)
+                if pstyle['text-align'] in ('center', 'right'):
+                    floating = pstyle['text-align']
         fake_margins = floating is None
         self.count += 1
         img = self.images[href]
@@ -95,7 +109,7 @@ class ImagesManager(object):
             makeelement(parent, 'wp:simplePos', x='0', y='0')
             makeelement(makeelement(parent, 'wp:positionH', relativeFrom='margin'), 'wp:align').text = floating
             makeelement(makeelement(parent, 'wp:positionV', relativeFrom='line'), 'wp:align').text = 'top'
-        makeelement(parent, 'wp:extent', cx=str(width), cy=str(width))
+        makeelement(parent, 'wp:extent', cx=str(width), cy=str(height))
         if fake_margins:
             # DOCX does not support setting margins for inline images, so we
             # fake it by using effect extents to simulate margins
@@ -108,22 +122,26 @@ class ImagesManager(object):
                 makeelement(parent, 'wp:wrapTopAndBottom')
             else:
                 makeelement(parent, 'wp:wrapSquare', wrapText='bothSides')
-        makeelement(parent, 'wp:docPr', id=str(self.count), name=name, descr=html_img.get('alt') or name)
+        self.create_docx_image_markup(parent, name, html_img.get('alt') or name, img.rid, width, height)
+        return ans
+
+    def create_docx_image_markup(self, parent, name, alt, img_rid, width, height):
+        makeelement, namespaces = self.document_relationships.namespace.makeelement, self.document_relationships.namespace.namespaces
+        makeelement(parent, 'wp:docPr', id=str(self.count), name=name, descr=alt)
         makeelement(makeelement(parent, 'wp:cNvGraphicFramePr'), 'a:graphicFrameLocks', noChangeAspect="1")
         g = makeelement(parent, 'a:graphic')
         gd = makeelement(g, 'a:graphicData', uri=namespaces['pic'])
         pic = makeelement(gd, 'pic:pic')
         nvPicPr = makeelement(pic, 'pic:nvPicPr')
-        makeelement(nvPicPr, 'pic:cNvPr', id='0', name=name, descr=html_img.get('alt') or name)
+        makeelement(nvPicPr, 'pic:cNvPr', id='0', name=name, descr=alt)
         makeelement(nvPicPr, 'pic:cNvPicPr')
         bf = makeelement(pic, 'pic:blipFill')
-        makeelement(bf, 'a:blip', r_embed=img.rid)
+        makeelement(bf, 'a:blip', r_embed=img_rid)
         makeelement(makeelement(bf, 'a:stretch'), 'a:fillRect')
         spPr = makeelement(pic, 'pic:spPr')
         xfrm = makeelement(spPr, 'a:xfrm')
         makeelement(xfrm, 'a:off', x='0', y='0'), makeelement(xfrm, 'a:ext', cx=str(width), cy=str(height))
         makeelement(makeelement(spPr, 'a:prstGeom', prst='rect'), 'a:avLst')
-        return ans
 
     def create_filename(self, href, fmt):
         fname = ascii_filename(urlunquote(posixpath.basename(href)))
@@ -147,3 +165,31 @@ class ImagesManager(object):
             return item.data
         finally:
             item.unload_data_from_memory(False)
+
+    def create_cover_markup(self, img, width, height):
+        self.count += 1
+        makeelement, namespaces = self.document_relationships.namespace.makeelement, self.document_relationships.namespace.namespaces
+
+        root = etree.Element('root', nsmap=namespaces)
+        ans = makeelement(root, 'w:drawing', append=False)
+        parent = makeelement(ans, 'wp:anchor', **{'dist'+edge:'0' for edge in 'LRTB'})
+        parent.set('simplePos', '0'), parent.set('relativeHeight', '1'), parent.set('behindDoc',"0"), parent.set('locked', "0")
+        parent.set('layoutInCell', "1"), parent.set('allowOverlap', '1')
+        makeelement(parent, 'wp:simplePos', x='0', y='0')
+        makeelement(makeelement(parent, 'wp:positionH', relativeFrom='page'), 'wp:align').text = 'center'
+        makeelement(makeelement(parent, 'wp:positionV', relativeFrom='page'), 'wp:align').text = 'center'
+        width, height = map(pt_to_emu, (width, height))
+        makeelement(parent, 'wp:extent', cx=str(width), cy=str(height))
+        makeelement(parent, 'wp:effectExtent', l='0', r='0', t='0', b='0')
+        makeelement(parent, 'wp:wrapTopAndBottom')
+        self.create_docx_image_markup(parent, 'cover.jpg', _('Cover'), img.rid, width, height)
+        return ans
+
+    def write_cover_block(self, body, cover_image):
+        makeelement, namespaces = self.document_relationships.namespace.makeelement, self.document_relationships.namespace.namespaces
+        pbb = body[0].xpath('//*[local-name()="pageBreakBefore"]')[0]
+        pbb.set('{%s}val' % namespaces['w'], 'on')
+        p = makeelement(body, 'w:p', append=False)
+        body.insert(0, p)
+        r = makeelement(p, 'w:r')
+        r.append(cover_image)

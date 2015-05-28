@@ -8,7 +8,8 @@ __builtin__.__dict__['dynamic_property'] = lambda func: func(None)
 from math import floor
 from functools import partial
 
-warnings.simplefilter('ignore', DeprecationWarning)
+if 'CALIBRE_SHOW_DEPRECATION_WARNINGS' not in os.environ:
+    warnings.simplefilter('ignore', DeprecationWarning)
 try:
     os.getcwdu()
 except:
@@ -20,15 +21,6 @@ from calibre.constants import (iswindows, isosx, islinux, isfrozen,
         filesystem_encoding, plugins, config_dir)
 from calibre.startup import winutil, winutilerror
 from calibre.utils.icu import safe_chr
-
-if False and islinux and not getattr(sys, 'frozen', False):
-    # Imported before PyQt to workaround PyQt util-linux conflict discovered on gentoo
-    # See http://bugs.gentoo.org/show_bug.cgi?id=317557
-    # Importing uuid is slow so get rid of this at some point, maybe in a few
-    # years when even Debian has caught up
-    # Also remember to remove it from site.py in the binary builds
-    import uuid
-    uuid.uuid4()
 
 if False:
     # Prevent pyflakes from complaining

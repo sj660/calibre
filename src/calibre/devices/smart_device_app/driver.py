@@ -351,6 +351,7 @@ class SMART_DEVICE_APP(DeviceConfig, DevicePlugin):
         self.noop_counter = 0
         self.debug_start_time = time.time()
         self.debug_time = time.time()
+        self.is_connected = False
 
     def _debug(self, *args):
         # manual synchronization so we don't lose the calling method name
@@ -1798,6 +1799,7 @@ class SMART_DEVICE_APP(DeviceConfig, DevicePlugin):
     @synchronous('sync_lock')
     def startup(self):
         self.listen_socket = None
+        self.is_connected = False
 
     @synchronous('sync_lock')
     def startup_on_demand(self):
