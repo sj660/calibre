@@ -285,7 +285,7 @@ class MainWindowMixin(object):  # {{{
         self.donate_button = ThrobbingButton()
         self.location_manager = LocationManager(self)
 
-        self.iactions['Fetch News'].init_scheduler(db)
+        # self.iactions['Fetch News'].init_scheduler(db)
 
         self.search_bar = SearchBar(self)
         self.bars_manager = BarsManager(self.donate_button,

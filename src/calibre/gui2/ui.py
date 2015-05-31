@@ -159,7 +159,7 @@ class Main(MainWindow, MainWindowMixin, DeviceMixin, EmailMixin,  # {{{
             ac.plugin_path = action.plugin_path
             ac.interface_action_base_plugin = action
             self.add_iaction(ac)
-        self.load_store_plugins()
+      #  self.load_store_plugins()
 
     def init_iaction(self, action):
         ac = action.load_actual_plugin(self)
@@ -232,8 +232,8 @@ class Main(MainWindow, MainWindowMixin, DeviceMixin, EmailMixin,  # {{{
                     raise
         self.donate_action = QAction(QIcon(I('donate.png')),
                 _('&Donate to support calibre'), self)
-        for st in self.istores.values():
-            st.do_genesis()
+        # for st in self.istores.values():
+        #    st.do_genesis()
         MainWindowMixin.init_main_window_mixin(self, db)
 
         # Jobs Button {{{
@@ -910,7 +910,7 @@ class Main(MainWindow, MainWindowMixin, DeviceMixin, EmailMixin,  # {{{
         from calibre.db.delete_service import shutdown
         shutdown()
         time.sleep(2)
-        self.istores.join()
+        # self.istores.join()
         self.hide_windows()
         # Do not report any errors that happen after the shutdown
         sys.excepthook = sys.__excepthook__

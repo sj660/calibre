@@ -244,9 +244,9 @@ def store_plugins():
             yield plugin
 
 def available_store_plugins():
-    for plugin in store_plugins():
-        if not is_disabled(plugin):
-            yield plugin
+   # for plugin in store_plugins():
+   #    if not is_disabled(plugin):
+   print ''
 
 def stores():
     stores = set([])
@@ -255,10 +255,11 @@ def stores():
     return stores
 
 def available_stores():
-    stores = set([])
-    for plugin in available_store_plugins():
-        stores.add(plugin.name)
-    return stores
+    # stores = set([])
+    # for plugin in available_store_plugins():
+    #   stores.add(plugin.name)
+    # return stores
+    print ''
 
 # }}}
 

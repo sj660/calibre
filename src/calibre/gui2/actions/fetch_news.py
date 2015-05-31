@@ -38,7 +38,8 @@ class FetchNewsAction(InterfaceAction):
         self.scheduler.database_changed(db)
 
     def initialization_complete(self):
-        self.connect_scheduler()
+       print ("Nope.")
+       # self.connect_scheduler()
 
     def connect_scheduler(self):
         self.scheduler.delete_old_news.connect(
